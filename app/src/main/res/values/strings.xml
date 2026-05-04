@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Count Doodle</string>
+    <string name="add_event">Add event</string>
+    <string name="edit_event">Edit event</string>
+    <string name="event_name">Event name</string>
+    <string name="date">Date</string>
+    <string name="include_time">Include time</string>
+    <string name="time">Time</string>
+    <string name="emoji">Emoji</string>
+    <string name="background_color">Background color</string>
+    <string name="photo">Photo</string>
+    <string name="pick_from_gallery">Pick from gallery</string>
+    <string name="take_photo">Take photo</string>
+    <string name="remove_photo">Remove photo</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="empty_list_title">No events yet</string>
+    <string name="empty_list_subtitle">Tap + to add your first countdown</string>
+    <string name="today">Today</string>
+    <string name="day_format">%d days</string>
+    <string name="one_day">1 day</string>
+    <string name="happened_format">Happened %s ago</string>
+    <string name="single_widget_label">Countdown — single event</string>
+    <string name="multi_widget_label">Countdown — upcoming list</string>
+    <string name="pick_event">Pick an event</string>
+    <string name="no_event_selected">No event selected</string>
+</resources>
