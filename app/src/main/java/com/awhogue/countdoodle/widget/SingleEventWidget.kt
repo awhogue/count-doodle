@@ -114,7 +114,9 @@ class SingleEventWidget : GlanceAppWidget() {
                             style = TextStyle(color = ColorProvider(Color.White), fontWeight = FontWeight.Medium)
                         )
                         Text(
-                            text = formatCountdown(now, ev.dateEpochMillis, ev.hasTime),
+                            // Widgets refresh on the order of tens of minutes, so always
+                            // show days-only — h/m/s would go stale and lie.
+                            text = formatCountdown(now, ev.dateEpochMillis, hasTime = false),
                             style = TextStyle(color = ColorProvider(Color.White), fontWeight = FontWeight.Bold)
                         )
                     }

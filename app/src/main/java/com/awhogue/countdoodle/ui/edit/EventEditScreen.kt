@@ -30,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -39,6 +40,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,15 +51,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.emoji2.emojipicker.EmojiPickerView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-private val emojiOptions = listOf(
-    "🎉","🎂","✈️","💍","🎓","🌴","🎄","🎁","🚀","❤️","🏖️","🏔️","🍰","🎵","📅","🏆"
-)
 private val colorOptions = listOf(
     0xFF1F6FEB.toInt(), 0xFFE85D75.toInt(), 0xFF34A853.toInt(), 0xFFFFB300.toInt(),
     0xFF8E44AD.toInt(), 0xFF16A085.toInt(), 0xFFD35400.toInt(), 0xFF2C3E50.toInt(),
@@ -72,6 +77,7 @@ fun EventEditScreen(
     LaunchedEffect(eventId) { vm.loadIfExisting(eventId) }
     val state by vm.form.collectAsState()
     val ctx = LocalContext.current
+    var showEmojiPicker by remember { mutableStateOf(false) }
 
     val pickPhoto = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
@@ -147,17 +153,27 @@ fun EventEditScreen(
             }
 
             Text("Emoji", fontWeight = FontWeight.SemiBold)
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(emojiOptions) { emoji ->
-                    val selected = state.emoji == emoji
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(if (selected) Color.LightGray else Color.Transparent)
-                            .clickable { vm.setEmoji(if (selected) null else emoji) },
-                        contentAlignment = Alignment.Center,
-                    ) { Text(emoji, fontSize = 24.sp) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(Color.LightGray.copy(alpha = 0.25f))
+                        .clickable { showEmojiPicker = true },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = state.emoji ?: state.name.ifBlank { "🙂" }.let {
+                            if (state.emoji != null) state.emoji!! else com.awhogue.countdoodle.data.Defaults.emojiFor(it)
+                        },
+                        fontSize = 28.sp,
+                    )
+                }
+                if (state.emoji != null) {
+                    OutlinedButton(
+                        modifier = Modifier.padding(start = 8.dp),
+                        onClick = { vm.setEmoji(null) },
+                    ) { Text("Clear") }
                 }
             }
 
@@ -205,6 +221,34 @@ fun EventEditScreen(
                 enabled = state.isValid,
                 modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
             ) { Text("Save") }
+        }
+
+        if (showEmojiPicker) {
+            Dialog(
+                onDismissRequest = { showEmojiPicker = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false),
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .heightIn(min = 360.dp, max = 560.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    tonalElevation = 6.dp,
+                ) {
+                    AndroidView(
+                        factory = { context ->
+                            EmojiPickerView(context).apply {
+                                setOnEmojiPickedListener { picked ->
+                                    vm.setEmoji(picked.emoji)
+                                    showEmojiPicker = false
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+            }
         }
     }
 }

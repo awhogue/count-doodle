@@ -85,7 +85,7 @@ class MultiEventWidget : GlanceAppWidget() {
                         )
                         Spacer(modifier = GlanceModifier.defaultWeight())
                         Text(
-                            text = formatCountdown(now, e.dateEpochMillis, e.hasTime),
+                            text = formatCountdown(now, e.dateEpochMillis, hasTime = false),
                             style = TextStyle(color = ColorProvider(Color.White), fontWeight = FontWeight.Medium)
                         )
                     }

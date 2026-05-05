@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
@@ -89,13 +90,19 @@ fun EventDetailScreen(
 
         IconButton(
             onClick = onBack,
-            modifier = Modifier.padding(8.dp).align(Alignment.TopStart),
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(8.dp)
+                .align(Alignment.TopStart),
         ) {
             Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
         }
         IconButton(
             onClick = onEdit,
-            modifier = Modifier.padding(8.dp).align(Alignment.TopEnd),
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(8.dp)
+                .align(Alignment.TopEnd),
         ) {
             Icon(Icons.Filled.Edit, contentDescription = "Edit", tint = Color.White)
         }
