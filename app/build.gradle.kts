@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.awhogue.countdoodle"
+    namespace = "org.secondthought.countdoodle"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.awhogue.countdoodle"
+        applicationId = "org.secondthought.countdoodle"
         minSdk = 31
         targetSdk = 35
         versionCode = 1
