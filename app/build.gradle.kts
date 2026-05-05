@@ -20,10 +20,33 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    // Release signing — credentials read from ~/.gradle/gradle.properties so
+    // they never live in this repo. If the properties aren't set (e.g. on CI
+    // or another dev's machine), the release build is left unsigned.
+    val ksFile = (findProperty("COUNTDOODLE_KEYSTORE_FILE") as String?)?.let { file(it) }
+    val ksHasCreds = ksFile?.exists() == true &&
+        findProperty("COUNTDOODLE_KEYSTORE_PASSWORD") != null &&
+        findProperty("COUNTDOODLE_KEY_ALIAS") != null &&
+        findProperty("COUNTDOODLE_KEY_PASSWORD") != null
+
+    if (ksHasCreds) {
+        signingConfigs {
+            create("release") {
+                storeFile = ksFile
+                storePassword = findProperty("COUNTDOODLE_KEYSTORE_PASSWORD") as String
+                keyAlias = findProperty("COUNTDOODLE_KEY_ALIAS") as String
+                keyPassword = findProperty("COUNTDOODLE_KEY_PASSWORD") as String
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (ksHasCreds) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
