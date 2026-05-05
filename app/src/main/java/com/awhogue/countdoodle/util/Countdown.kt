@@ -6,6 +6,39 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import kotlin.math.abs
 
+data class CountdownParts(
+    val months: Int,
+    val days: Int,
+    val hours: Int,
+    val minutes: Int,
+    val seconds: Int,
+    val isPast: Boolean,
+)
+
+/** Calendar-aware breakdown of the gap between two instants into months / days / h / m / s. */
+fun countdownParts(
+    nowEpochMillis: Long,
+    targetEpochMillis: Long,
+    zone: ZoneId = ZoneId.systemDefault(),
+): CountdownParts {
+    val a0 = Instant.ofEpochMilli(nowEpochMillis).atZone(zone).toLocalDateTime()
+    val b0 = Instant.ofEpochMilli(targetEpochMillis).atZone(zone).toLocalDateTime()
+    val past = b0.isBefore(a0)
+    val a = if (past) b0 else a0
+    val b = if (past) a0 else b0
+
+    val months = ChronoUnit.MONTHS.between(a, b).toInt()
+    val afterMonths = a.plusMonths(months.toLong())
+    val days = ChronoUnit.DAYS.between(afterMonths, b).toInt()
+    val afterDays = afterMonths.plusDays(days.toLong())
+    val totalSec = ChronoUnit.SECONDS.between(afterDays, b)
+    val hours = (totalSec / 3600).toInt()
+    val minutes = ((totalSec % 3600) / 60).toInt()
+    val seconds = (totalSec % 60).toInt()
+
+    return CountdownParts(months, days, hours, minutes, seconds, past)
+}
+
 fun formatCountdown(
     nowEpochMillis: Long,
     targetEpochMillis: Long,

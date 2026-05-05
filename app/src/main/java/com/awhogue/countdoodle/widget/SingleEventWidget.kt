@@ -11,16 +11,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.Preferences
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
+import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.currentState
@@ -28,8 +31,13 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
+import androidx.glance.layout.Row
+import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.layout.width
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
@@ -38,7 +46,6 @@ import androidx.glance.unit.ColorProvider
 import com.awhogue.countdoodle.CountDoodleApp
 import com.awhogue.countdoodle.MainActivity
 import com.awhogue.countdoodle.data.Event
-import com.awhogue.countdoodle.util.formatCountdown
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -47,6 +54,7 @@ data class WidgetEventState(val event: Event?, val photo: Bitmap?)
 class SingleEventWidget : GlanceAppWidget() {
 
     override val stateDefinition = PreferencesGlanceStateDefinition
+    override val sizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent { Render() }
@@ -101,27 +109,125 @@ class SingleEventWidget : GlanceAppWidget() {
                 ) {}
             }
 
-            Box(modifier = GlanceModifier.fillMaxSize().padding(12.dp), contentAlignment = Alignment.Center) {
-                if (ev == null) {
+            if (ev == null) {
+                Box(modifier = GlanceModifier.fillMaxSize().padding(12.dp), contentAlignment = Alignment.Center) {
                     Text(
                         text = if (eventId == null) "Tap to configure" else "Loading…",
                         style = TextStyle(color = ColorProvider(Color.White), fontWeight = FontWeight.Medium)
                     )
-                } else {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "${ev.displayEmoji} ${ev.name}",
-                            style = TextStyle(color = ColorProvider(Color.White), fontWeight = FontWeight.Medium)
-                        )
-                        Text(
-                            // Widgets refresh on the order of tens of minutes, so always
-                            // show days-only — h/m/s would go stale and lie.
-                            text = formatCountdown(now, ev.dateEpochMillis, hasTime = false),
-                            style = TextStyle(color = ColorProvider(Color.White), fontWeight = FontWeight.Bold)
-                        )
-                    }
                 }
+            } else {
+                EventBody(ev = ev, now = now)
             }
+        }
+    }
+
+    @Composable
+    private fun EventBody(ev: Event, now: Long) {
+        val zone = java.time.ZoneId.systemDefault()
+        val today = java.time.Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
+        val eventDay = java.time.Instant.ofEpochMilli(ev.dateEpochMillis).atZone(zone).toLocalDate()
+        val days = java.time.temporal.ChronoUnit.DAYS.between(today, eventDay).toInt()
+        val isPast = days < 0
+        val number = if (isPast) -days else days
+        val unit = when {
+            number == 0 -> "today"
+            number == 1 && isPast -> "day ago"
+            number == 1 -> "day left"
+            isPast -> "days ago"
+            else -> "days left"
+        }
+        val subtitle = eventDay.format(java.time.format.DateTimeFormatter.ofPattern("EEE, d MMM yyyy"))
+
+        // Adaptive layout: compact when there's not enough vertical room for the
+        // big-number + label + date stack.
+        val size = LocalSize.current
+        val compact = size.height < 130.dp
+
+        if (compact) CompactBody(ev, number, unit) else FullBody(ev, number, unit, subtitle)
+    }
+
+    @Composable
+    private fun CompactBody(ev: Event, number: Int, unit: String) {
+        Column(
+            modifier = GlanceModifier.fillMaxSize().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = ev.displayEmoji,
+                    style = TextStyle(fontSize = 16.sp, color = ColorProvider(Color.White))
+                )
+                Spacer(GlanceModifier.width(6.dp))
+                Text(
+                    text = ev.name,
+                    style = TextStyle(
+                        color = ColorProvider(Color.White),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                    ),
+                    maxLines = 1,
+                )
+            }
+            Spacer(GlanceModifier.height(4.dp))
+            Text(
+                text = if (number == 0) unit else "$number $unit",
+                style = TextStyle(
+                    color = ColorProvider(Color.White),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp,
+                ),
+                maxLines = 1,
+            )
+        }
+    }
+
+    @Composable
+    private fun FullBody(ev: Event, number: Int, unit: String, subtitle: String) {
+        Column(
+            modifier = GlanceModifier.fillMaxSize().padding(14.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = ev.displayEmoji,
+                    style = TextStyle(fontSize = 18.sp, color = ColorProvider(Color.White))
+                )
+                Spacer(GlanceModifier.width(6.dp))
+                Text(
+                    text = ev.name,
+                    style = TextStyle(
+                        color = ColorProvider(Color.White),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                    ),
+                    maxLines = 1,
+                )
+            }
+            Spacer(GlanceModifier.height(6.dp))
+            Text(
+                text = if (number == 0) "—" else number.toString(),
+                style = TextStyle(
+                    color = ColorProvider(Color.White),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 36.sp,
+                ),
+            )
+            Text(
+                text = unit,
+                style = TextStyle(
+                    color = ColorProvider(Color.White),
+                    fontSize = 13.sp,
+                ),
+            )
+            Spacer(GlanceModifier.defaultWeight())
+            Text(
+                text = subtitle,
+                style = TextStyle(
+                    color = ColorProvider(Color.White.copy(alpha = 0.85f)),
+                    fontSize = 11.sp,
+                ),
+                maxLines = 1,
+            )
         }
     }
 
