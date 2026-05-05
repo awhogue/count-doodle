@@ -4,15 +4,37 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!--
+      Adaptive-icon foreground. The "safe zone" — guaranteed visible regardless
+      of launcher mask shape — is the inner 66dp circle at center (54, 54).
+      Everything important lives inside that circle; the crown/buttons may be
+      clipped by squircle masks, which is fine.
+    -->
+
+    <!-- Crown head: rectangular top of the stopwatch -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,30 m-22,0 a22,22 0 1,0 44,0 a22,22 0 1,0 -44,0 Z" />
-    <path
-        android:fillColor="#1F6FEB"
-        android:pathData="M54,30 L54,18 M54,30 L66,30"
-        android:strokeColor="#1F6FEB"
-        android:strokeWidth="3"/>
+        android:pathData="M48,18 h12 v6 h-12 z" />
+    <!-- Crown stem connecting crown to body -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M40,72 L68,72 L66,84 L42,84 Z"/>
+        android:pathData="M52,24 h4 v6 h-4 z" />
+
+    <!-- Right side button (small angled tab) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M74,30 l8,6 l-4,5 l-8,-6 z" />
+
+    <!-- Stopwatch body — stroke-only outline circle, r=28 around center (54,60) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5"
+        android:pathData="M54,60 m-28,0 a28,28 0 1,0 56,0 a28,28 0 1,0 -56,0 Z" />
+
+    <!-- Bold down arrow inside the body — communicates "countdown" -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M49,46 h10 v14 h7 l-12,16 l-12,-16 h7 z" />
 </vector>
