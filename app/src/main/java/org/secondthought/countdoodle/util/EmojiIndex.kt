@@ -99,7 +99,6 @@ val EMOJI_INDEX: List<EmojiEntry> = listOf(
     EmojiEntry("🎄", "christmas tree", listOf("christmas", "tree", "xmas", "holiday")),
     EmojiEntry("🎃", "jack o lantern", listOf("halloween", "pumpkin", "spooky")),
     EmojiEntry("🦃", "turkey", listOf("thanksgiving", "turkey")),
-    EmojiEntry("🐰", "rabbit face", listOf("easter", "bunny", "rabbit")),
     EmojiEntry("🎅", "santa claus", listOf("christmas", "santa", "xmas")),
     EmojiEntry("🕯️", "candle", listOf("candle", "flame", "light")),
     EmojiEntry("🪅", "pinata", listOf("party", "pinata", "celebration")),
@@ -199,7 +198,7 @@ val EMOJI_INDEX: List<EmojiEntry> = listOf(
     EmojiEntry("🏢", "office building", listOf("office", "work", "building")),
     EmojiEntry("🏥", "hospital", listOf("hospital", "doctor", "medical")),
     EmojiEntry("🏫", "school", listOf("school", "education")),
-    EmojiEntry("🌍", "globe europe africa", listOf("earth", "world", "globe")),
+    EmojiEntry("🌍", "globe europe africa", listOf("earth", "world", "globe", "planet")),
     EmojiEntry("🌎", "globe americas", listOf("earth", "world", "globe", "americas")),
     EmojiEntry("🌏", "globe asia australia", listOf("earth", "world", "globe", "asia")),
 
@@ -235,7 +234,7 @@ val EMOJI_INDEX: List<EmojiEntry> = listOf(
     EmojiEntry("🐱", "cat face", listOf("cat", "kitten", "animal", "pet")),
     EmojiEntry("🐭", "mouse face", listOf("mouse", "animal")),
     EmojiEntry("🐹", "hamster", listOf("hamster", "animal", "pet")),
-    EmojiEntry("🐰", "rabbit face", listOf("rabbit", "bunny", "animal")),
+    EmojiEntry("🐰", "rabbit face", listOf("rabbit", "bunny", "animal", "easter")),
     EmojiEntry("🦊", "fox", listOf("fox", "animal")),
     EmojiEntry("🐻", "bear", listOf("bear", "animal")),
     EmojiEntry("🐼", "panda", listOf("panda", "animal")),
@@ -283,7 +282,6 @@ val EMOJI_INDEX: List<EmojiEntry> = listOf(
     EmojiEntry("🛍️", "shopping bags", listOf("shopping", "bags", "buy")),
 
     // Misc useful
-    EmojiEntry("🌍", "earth", listOf("earth", "world", "planet")),
     EmojiEntry("🚨", "police light", listOf("alert", "siren", "emergency")),
     EmojiEntry("🚫", "no entry", listOf("no", "forbidden", "ban")),
     EmojiEntry("⚠️", "warning", listOf("warning", "caution", "alert")),

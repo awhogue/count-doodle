@@ -69,6 +69,12 @@ class EmojiSearchTest {
     }
 
     @Test
+    fun `bundled index has unique emojis`() {
+        val dupes = EMOJI_INDEX.groupBy { it.emoji }.filter { it.value.size > 1 }.keys
+        assertThat(dupes).isEmpty()
+    }
+
+    @Test
     fun `bundled index has reasonable coverage`() {
         // Sanity-check the bundled index — common queries should return something
         listOf("cake", "heart", "star", "smile", "cat", "dog", "plane", "car")
