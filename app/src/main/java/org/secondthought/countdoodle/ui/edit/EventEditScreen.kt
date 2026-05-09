@@ -26,7 +26,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -190,11 +192,24 @@ fun EventEditScreen(
                     val selected = state.backgroundColorArgb == argb
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(40.dp)
                             .clip(CircleShape)
+                            .then(
+                                if (selected) Modifier.border(3.dp, Color.Black, CircleShape)
+                                else Modifier
+                            )
                             .background(Color(argb))
                             .clickable { vm.setColor(if (selected) null else argb) },
-                    )
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (selected) {
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = "Selected",
+                                tint = Color.White,
+                            )
+                        }
+                    }
                 }
             }
 
