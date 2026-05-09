@@ -40,4 +40,27 @@ class DefaultsTest {
         Defaults.emojiFor("")
         Defaults.colorArgbFor("")
     }
+
+    @Test fun `name matches index picks the matching emoji`() {
+        assertThat(Defaults.emojiFor("Birthday")).isEqualTo("🎂")
+        assertThat(Defaults.emojiFor("Wedding")).isEqualTo("💒")
+        assertThat(Defaults.emojiFor("Halloween")).isEqualTo("🎃")
+        assertThat(Defaults.emojiFor("Christmas")).isEqualTo("🎄")
+    }
+
+    @Test fun `match works on a word inside the name`() {
+        // "Mom's birthday" should pick the birthday emoji.
+        assertThat(Defaults.emojiFor("Mom's birthday")).isEqualTo("🎂")
+        // "Trip to Paris" should match "trip" keyword (✈️ airplane).
+        assertThat(Defaults.emojiFor("Trip to Paris")).isEqualTo("✈️")
+    }
+
+    @Test fun `unmatched name falls back to deterministic hash pick`() {
+        // "Zzqzx" matches nothing in the index; should still return a non-empty
+        // emoji and be stable across calls.
+        val a = Defaults.emojiFor("Zzqzx")
+        val b = Defaults.emojiFor("Zzqzx")
+        assertThat(a).isNotEmpty()
+        assertThat(a).isEqualTo(b)
+    }
 }
