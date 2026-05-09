@@ -15,8 +15,9 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.lazy.LazyColumn
+import androidx.glance.appwidget.lazy.items
 import androidx.glance.appwidget.provideContent
-import androidx.glance.LocalSize
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -37,6 +38,7 @@ import org.secondthought.countdoodle.CountDoodleApp
 import org.secondthought.countdoodle.MainActivity
 import org.secondthought.countdoodle.data.Event
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -48,36 +50,28 @@ class MultiEventWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val app = CountDoodleApp.from(context)
         val now = System.currentTimeMillis()
-        // Fetch enough rows to fill the largest size we render (~8 rows worst case).
-        val events = app.repository.getUpcoming(now, limit = 8)
+        val zone = ZoneId.systemDefault()
+        val startOfToday = LocalDate.now(zone).atStartOfDay(zone).toInstant().toEpochMilli()
+        val events = app.repository.getUpcoming(startOfToday, limit = 50)
         provideContent { Render(events, now) }
     }
 
     @Composable
     private fun Render(events: List<Event>, now: Long) {
         val ctx = LocalContext.current
-        val size = LocalSize.current
-        // Each row is ~32dp tall, separated by an 8dp spacer (no trailing gap).
-        // Internal padding is 8dp top + 8dp bottom = 16dp.
-        //   maxRows = floor((available + gap) / (row + gap))
-        val available = size.height.value - 16f
-        val maxRows = ((available + 8f) / 40f).toInt().coerceIn(1, 8)
-        val visible = events.take(maxRows)
-
-        Column(
+        Box(
             modifier = GlanceModifier
                 .fillMaxSize()
                 .background(ColorProvider(Color(0xFF111214)))
-                .padding(horizontal = 10.dp, vertical = 8.dp)
-                .clickable(actionStartActivity(
-                    Intent(ctx, MainActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    }
-                )),
+                .padding(horizontal = 10.dp, vertical = 8.dp),
         ) {
-            if (visible.isEmpty()) {
+            if (events.isEmpty()) {
                 Box(
-                    modifier = GlanceModifier.fillMaxSize(),
+                    modifier = GlanceModifier.fillMaxSize().clickable(actionStartActivity(
+                        Intent(ctx, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        }
+                    )),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -86,9 +80,13 @@ class MultiEventWidget : GlanceAppWidget() {
                     )
                 }
             } else {
-                visible.forEachIndexed { i, e ->
-                    if (i > 0) Spacer(GlanceModifier.height(8.dp))
-                    EventRow(e, now, ctx)
+                LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
+                    items(events, itemId = { it.id }) { e ->
+                        Column {
+                            EventRow(e, now, ctx)
+                            Spacer(GlanceModifier.height(8.dp))
+                        }
+                    }
                 }
             }
         }
