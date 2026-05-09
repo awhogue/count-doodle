@@ -20,6 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,7 +57,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.emoji2.emojipicker.EmojiPickerView
+import org.secondthought.countdoodle.util.searchEmojis
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import java.time.LocalDate
@@ -236,17 +243,57 @@ fun EventEditScreen(
                     shape = RoundedCornerShape(16.dp),
                     tonalElevation = 6.dp,
                 ) {
-                    AndroidView(
-                        factory = { context ->
-                            EmojiPickerView(context).apply {
-                                setOnEmojiPickedListener { picked ->
-                                    vm.setEmoji(picked.emoji)
-                                    showEmojiPicker = false
+                    var query by remember { mutableStateOf("") }
+                    val results by remember(query) {
+                        derivedStateOf { searchEmojis(query) }
+                    }
+                    Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
+                        OutlinedTextField(
+                            value = query,
+                            onValueChange = { query = it },
+                            placeholder = { Text("Search") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        if (query.isBlank()) {
+                            AndroidView(
+                                factory = { context ->
+                                    EmojiPickerView(context).apply {
+                                        setOnEmojiPickedListener { picked ->
+                                            vm.setEmoji(picked.emoji)
+                                            showEmojiPicker = false
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        } else if (results.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center,
+                            ) { Text("No matches", fontSize = 14.sp) }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(minSize = 48.dp),
+                                modifier = Modifier.fillMaxSize(),
+                            ) {
+                                items(results, key = { it.emoji }) { entry ->
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clickable {
+                                                vm.setEmoji(entry.emoji)
+                                                showEmojiPicker = false
+                                            },
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Text(entry.emoji, fontSize = 28.sp)
+                                    }
                                 }
                             }
-                        },
-                        modifier = Modifier.fillMaxSize(),
-                    )
+                        }
+                    }
                 }
             }
         }
